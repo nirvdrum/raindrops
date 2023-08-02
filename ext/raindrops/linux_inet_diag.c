@@ -72,10 +72,15 @@ struct nogvl_args {
 #  define my_SOCK_RAW SOCK_RAW
 static VALUE FORCE_CLOEXEC(VALUE io)
 {
+	fprintf(stderr, "KEVIN> FORCE_CLOEXEC 1\n");
 	int fd = my_fileno(io);
+		fprintf(stderr, "KEVIN> FORCE_CLOEXEC 2\n");
 	int flags = fcntl(fd, F_SETFD, FD_CLOEXEC);
+		fprintf(stderr, "KEVIN> FORCE_CLOEXEC 3\n");
 	if (flags == -1)
+		fprintf(stderr, "KEVIN> FORCE_CLOEXEC 4a\n");
 		rb_sys_fail("fcntl(F_SETFD, FD_CLOEXEC)");
+			fprintf(stderr, "KEVIN> FORCE_CLOEXEC 4b\n");
 	return io;
 }
 #endif
@@ -88,11 +93,24 @@ static VALUE FORCE_CLOEXEC(VALUE io)
  */
 static VALUE ids_s_new(VALUE klass)
 {
+	fprintf(stderr, "KEVIN> In ids_s_new\n");
+
+#ifdef SOCK_CLOEXEC
+	fprintf(stderr, "KEVIN> SOCK_CLOEXEC defined\n");
+#else
+	fprintf(stderr, "KEVIN> SOCK_CLOEXEC NOT defined\n");
+#endif
+
 	VALUE argv[3];
 
 	argv[0] = INT2NUM(AF_NETLINK);
 	argv[1] = INT2NUM(my_SOCK_RAW);
 	argv[2] = INT2NUM(NETLINK_INET_DIAG);
+
+	RB_GC_GUARD(argv);
+
+	//fprintf(stderr, "KEVIN> argv[0]: %d; argv[1]: %d; argv[2]: %d\n", argv[0], argv[1], argv[2]);
+	fprintf(stderr, "KEVIN> argv[0]: %d; argv[1]: %d; argv[2]: %d\n", AF_NETLINK, my_SOCK_RAW, NETLINK_INET_DIAG);
 
 	return FORCE_CLOEXEC(rb_call_super(3, argv));
 }
@@ -625,12 +643,24 @@ static VALUE tcp_listener_stats(int argc, VALUE *argv, VALUE self)
 	 * buffer for recvmsg() later, we already checked for
 	 * OPLEN <= page_size at initialization
 	 */
+
+/*
 	buf = rb_str_buf_new(page_size);
 	args.iov[2].iov_len = OPLEN;
 	args.iov[2].iov_base = RSTRING_PTR(buf);
 	args.table = NULL;
+*/
+/*
 	sock = NIL_P(sock) ? rb_funcall(cIDSock, id_new, 0)
 			: rb_io_get_io(sock);
+			*/
+
+//sock = rb_funcall(cIDSock, id_new, 0);
+fprintf(stderr, "KEVIN> cIDSock: %p; id_new: %p\n", cIDSock, id_new);
+
+rb_funcall(cIDSock, id_new, 0);
+
+/*
 	args.fd = my_fileno(sock);
 
 	switch (TYPE(addrs)) {
@@ -652,9 +682,8 @@ static VALUE tcp_listener_stats(int argc, VALUE *argv, VALUE self)
 			VALUE cur = rb_ary_entry(addrs, i);
 
 			parse_addr(&check, cur);
-			rb_hash_aset(rv, cur, Qtrue /* placeholder */);
+			rb_hash_aset(rv, cur, Qtrue);
 		}
-		/* fall through */
 	}
 	case T_NIL:
 		args.table = st_init_strtable();
@@ -673,9 +702,10 @@ static VALUE tcp_listener_stats(int argc, VALUE *argv, VALUE self)
 	if (RHASH_SIZE(rv) > 1)
 		rb_hash_foreach(rv, drop_placeholders, Qfalse);
 
-	/* let GC deal with corner cases */
 	rb_str_resize(buf, 0);
 	if (argc < 2) rb_io_close(sock);
+*/
+
 	return rv;
 }
 
