@@ -109,9 +109,6 @@ static VALUE ids_s_new(VALUE klass)
 
 	RB_GC_GUARD(argv);
 
-	//fprintf(stderr, "KEVIN> argv[0]: %d; argv[1]: %d; argv[2]: %d\n", argv[0], argv[1], argv[2]);
-	fprintf(stderr, "KEVIN> argv[0]: %d; argv[1]: %d; argv[2]: %d\n", AF_NETLINK, my_SOCK_RAW, NETLINK_INET_DIAG);
-
 	return FORCE_CLOEXEC(rb_call_super(3, argv));
 }
 
@@ -644,23 +641,14 @@ static VALUE tcp_listener_stats(int argc, VALUE *argv, VALUE self)
 	 * OPLEN <= page_size at initialization
 	 */
 
-/*
 	buf = rb_str_buf_new(page_size);
 	args.iov[2].iov_len = OPLEN;
 	args.iov[2].iov_base = RSTRING_PTR(buf);
 	args.table = NULL;
-*/
-/*
+
 	sock = NIL_P(sock) ? rb_funcall(cIDSock, id_new, 0)
 			: rb_io_get_io(sock);
-			*/
 
-//sock = rb_funcall(cIDSock, id_new, 0);
-fprintf(stderr, "KEVIN> cIDSock: %p; id_new: %p\n", cIDSock, id_new);
-
-rb_funcall(cIDSock, id_new, 0);
-
-/*
 	args.fd = my_fileno(sock);
 
 	switch (TYPE(addrs)) {
@@ -704,7 +692,6 @@ rb_funcall(cIDSock, id_new, 0);
 
 	rb_str_resize(buf, 0);
 	if (argc < 2) rb_io_close(sock);
-*/
 
 	return rv;
 }
